@@ -100,6 +100,7 @@ parameters:
     name: 'region'
     description: |
       The name of the Redis region of the instance.
+      This field does not support mutable update.
     required: false
     immutable: true
     url_param_only: true
@@ -112,7 +113,7 @@ properties:
       Only applicable to STANDARD_HA tier which protects the instance
       against zonal failures by provisioning it across two zones.
       If provided, it must be a different zone from the one provided in
-      [locationId].
+      [locationId]. This field does not support mutable update.
     immutable: true
     default_from_api: true
   - !ruby/object:Api::Type::Boolean
@@ -120,14 +121,15 @@ properties:
     description: |
       Optional. Indicates whether OSS Redis AUTH is enabled for the
       instance. If set to "true" AUTH is enabled on the instance.
-      Default value is "false" meaning AUTH is disabled.
+      Default value is "false" meaning AUTH is disabled. This field
+      does not support mutable update.
     default_value: false
   - !ruby/object:Api::Type::String
     name: authorizedNetwork
     description: |
       The full name of the Google Compute Engine network to which the
       instance is connected. If left unspecified, the default network
-      will be used.
+      will be used. This field does not support mutable update.
     immutable: true
     default_from_api: true
     custom_expand: 'templates/terraform/custom_expand/redis_instance_authorized_network.erb'
@@ -154,27 +156,32 @@ properties:
       For Basic Tier instances, this will always be the same as the
       [locationId] provided by the user at creation time. For Standard Tier
       instances, this can be either [locationId] or [alternativeLocationId]
-      and can change after a failover event.
+      and can change after a failover event. This field does not support
+      mutable update.
     output: true
   - !ruby/object:Api::Type::String
     name: displayName
     description: |
-      An arbitrary and optional user-provided name for the instance.
+      An arbitrary and optional user-provided name for the instance. This
+      field supports mutable update.
   - !ruby/object:Api::Type::String
     name: host
     description: |
       Hostname or IP address of the exposed Redis endpoint used by clients
-      to connect to the service.
+      to connect to the service. This field does not support mutable update.
     output: true
   - !ruby/object:Api::Type::KeyValueLabels
     name: 'labels'
-    description: Resource labels to represent user provided metadata.
+    description: |
+      Resource labels to represent user provided metadata. This field supports
+      mutable update.
   - !ruby/object:Api::Type::KeyValuePairs
     name: 'redisConfigs'
     description: |
       Redis configuration parameters, according to http://redis.io/topics/config.
       Please check Memorystore documentation for the list of supported parameters:
       https://cloud.google.com/memorystore/docs/redis/reference/rest/v1/projects.locations.instances#Instance.FIELDS.redis_configs
+      This field supports mutable update.
   - !ruby/object:Api::Type::String
     name: locationId
     description: |
@@ -182,13 +189,15 @@ properties:
       the service will choose a zone for the instance. For STANDARD_HA tier,
       instances will be created across two zones for protection against
       zonal failures. If [alternativeLocationId] is also provided, it must
-      be different from [locationId].
+      be different from [locationId]. This field does not support mutable
+      update.
     immutable: true
     default_from_api: true
   - !ruby/object:Api::Type::String
     name: name
     description: |
       The ID of the instance or a fully qualified identifier for the instance.
+      This field does not support mutable update.
     required: true
     immutable: true
     custom_expand: 'templates/terraform/custom_expand/shortname_to_url.go.erb'
@@ -371,11 +380,14 @@ properties:
           resolution and up to nine fractional digits.
   - !ruby/object:Api::Type::Integer
     name: memorySizeGb
-    description: Redis memory size in GiB.
+    description: |
+      Redis memory size in GiB. This field supports mutable update.
     required: true
   - !ruby/object:Api::Type::Integer
     name: port
-    description: The port number of the exposed Redis endpoint.
+    description: |
+      The port number of the exposed Redis endpoint. This field does not
+      support mutable update.
     output: true
   - !ruby/object:Api::Type::String
     name: persistenceIamIdentity
@@ -390,7 +402,8 @@ properties:
     description: |
       The version of Redis software. If not provided, latest supported
       version will be used. Please check the API documentation linked
-      at the top for the latest valid values.
+      at the top for the latest valid values. This field supports
+      mutable update.
     default_from_api: true
     update_url: 'projects/{{project}}/locations/{{region}}/instances/{{name}}:upgrade'
     update_verb: :POST
@@ -401,7 +414,7 @@ properties:
       instance. If not provided, the service will choose an unused /29
       block, for example, 10.0.0.0/29 or 192.168.0.0/29. Ranges must be
       unique and non-overlapping with existing subnets in an authorized
-      network.
+      network. This field does not support update.
     immutable: true
     # In some situations the returned IP range may not match the sent value
     # but will be a subset of the range.
@@ -414,6 +427,8 @@ properties:
 
       - BASIC: standalone instance
       - STANDARD_HA: highly available primary/replica instances
+
+      This field does not support mutable update.
     values:
       - :BASIC
       - :STANDARD_HA
@@ -426,6 +441,8 @@ properties:
       The TLS mode of the Redis instance, If not provided, TLS is disabled for the instance.
 
       - SERVER_AUTHENTICATION: Client to Server traffic encryption enabled with server authentication
+
+      This field does not support mutable update.
     values:
       - :SERVER_AUTHENTICATION
       - :DISABLED
@@ -468,7 +485,8 @@ properties:
       Optional. The number of replica nodes. The valid range for the Standard Tier with
       read replicas enabled is [1-5] and defaults to 2. If read replicas are not enabled
       for a Standard Tier instance, the only valid value is 1 and the default is 1.
-      The valid value for basic tier is 0 and the default is also 0.
+      The valid value for basic tier is 0 and the default is also 0. This field supports
+      mutable update.
     default_from_api: true
   - !ruby/object:Api::Type::Array
     name: nodes
@@ -509,6 +527,8 @@ properties:
       instance cannot scale up or down the number of replicas.
       - READ_REPLICAS_ENABLED: If enabled, read endpoint will be provided and the instance
       can scale up and down the number of replicas.
+
+      This field does not support mutable update.
     values:
       - :READ_REPLICAS_DISABLED
       - :READ_REPLICAS_ENABLED
@@ -519,7 +539,8 @@ properties:
       Optional. Additional IP range for node placement. Required when enabling read replicas on
       an existing instance. For DIRECT_PEERING mode value must be a CIDR range of size /28, or
       "auto". For PRIVATE_SERVICE_ACCESS mode value must be the name of an allocated address
-      range associated with the private service access connection, or "auto".
+      range associated with the private service access connection, or "auto". This field does not
+      support mutable update.
     default_from_api: true
     diff_suppress_func: 'secondaryIpDiffSuppress'
   - !ruby/object:Api::Type::String
